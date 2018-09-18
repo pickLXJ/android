@@ -1,0 +1,53 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "28.0.2"
+    defaultConfig {
+        applicationId "com.example.ndk_onload"
+        minSdkVersion 15
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+
+        sourceSets.main {
+            jni.srcDirs = []
+            jniLibs.srcDirs 'src/main/jniLibs' //这里设置 so 生成的位置
+        }
+        //设置编译任务，编译ndkBuild
+        tasks.withType(JavaCompile) {
+            compileTask -> compileTask.dependsOn 'ndkBuild'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+
+
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:26.+'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha7'
+    testCompile 'junit:junit:4.12'
+}
+
+
+task ndkBuild( type:Exec, description: 'Compile JNI source via NDK') {
+    //应该都看得明白，就不解释了
+    commandLine "C:\\Users\\LXUJIE\\AppData\\Local\\Android\\Sdk\\ndk-bundle\\ndk-build.cmd",
+            'NDK_PROJECT_PATH=build/intermediates/ndk',
+            'NDK_LIBS_OUT=src/main/jniLibs',
+            'APP_BUILD_SCRIPT=src/main/jni/Android.mk',
+            'NDK_APPLICATION_MK=src/main/jni/Application.mk'
+}
